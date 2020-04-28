@@ -1,0 +1,4 @@
+gitdb2==2.0.3
+GitPython==2.1.8
+PyYAML==3.12
+smmap==3.0.2
