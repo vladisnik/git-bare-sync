@@ -1,0 +1,9 @@
+---
+
+repo_root: /home/vuser/code-projects/gitea-scripts/repo-sync/repo
+remote_server: github.com
+remote_user: git
+metrics: fetch_statuses.json
+repos:
+  vladisnik:
+    - repo-sync: vladisnik/git-bare-sync

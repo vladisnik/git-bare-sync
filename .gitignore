@@ -1,6 +1,8 @@
 # configuration files
 *.yml
 *.yaml
+# but not example
+!config-example.yml
 
 # status file
 *.json
