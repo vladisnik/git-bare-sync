@@ -1,0 +1,9 @@
+# configuration files
+*.yml
+*.yaml
+
+# status file
+*.json
+
+# python virtual environment
+venv*
