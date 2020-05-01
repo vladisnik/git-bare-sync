@@ -71,11 +71,9 @@ def read_config(config: TextIO) -> dict:
     try:
         return yaml.load(config)
     except yaml.scanner.ScannerError as e:
-        print(
+        raise SystemExit(
             "Got error while parsing configuration file.\n{err}".format(err=e),
-            file=sys.stderr
         )
-        sys.exit(1)
 
 
 def parse_config(config: dict) -> tuple:
@@ -127,17 +125,14 @@ def parse_config(config: dict) -> tuple:
 
         status_file = config['metrics']
     except KeyError as e:
-        print("Missing config field {field}".format(field=e), file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit("Missing config field {field}".format(field=e))
     except (FileNotFoundError, PermissionError) as e:
-        print(e, file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(e)
     except TypeError as e:
-        print(
+        raise SystemError(
             "Potential error in configuration file.\n"
             "Got exception while parsing it: {err}".format(err=e)
         )
-        sys.exit(1)
 
     return (remote_repo_base_url, repo_with_remotes, status_file)
 
@@ -165,27 +160,22 @@ def parse_cli_arguments(args: object) -> tuple:
                 raise TypeError
 
             if not path.isdir(local_repo):
-                print(
+                raise SystemExit(
                     "Directory not found or permission denied, "
                     "of git repository: {directory}".format(directory=local_repo)
                 )
-                sys.exit(1)
         else:
             if status_file is None:
-                print(
+                raise SystemExit(
                     "Needs arguments --status-file "
                     "when script run without configuration file "
-                    "and action 'metric'",
-                    file=sys.stderr
+                    "and action 'metric'"
                 )
-                sys.exit(1)
     except TypeError:
-        print(
+        raise SystemExit(
             "Needs arguments --local-repo and --remote-repo "
-            "when script run without configuration file",
-            file=sys.stderr
+            "when script run without configuration file"
         )
-        sys.exit(1)
 
     return (local_repo, remote_repo, status_file)
 
@@ -283,7 +273,7 @@ def write_status_file(metrics: dict, status_file: str):
         with open(status_file, 'w') as status_file_fh:
             status_file_fh.write(json.dumps(full_status, indent=2))
     except PermissionError as e:
-        print(e, file=sys.stderr)
+        raise SystemExit(e)
 
 
 def read_status_file(status_file: str):
@@ -298,8 +288,7 @@ def read_status_file(status_file: str):
         with open(status_file, 'r') as status_file_fh:
             print(status_file_fh.read())
     except (PermissionError, FileNotFoundError) as e:
-        print(e, file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(e)
 
 
 def main():
