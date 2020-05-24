@@ -47,6 +47,12 @@ def get_arguments() -> object:
              "Used in executing script thru CLI."
     )
     parser.add_argument(
+        '--remove-branches', dest='remove_local_branches', action='store_true',
+        help="Flag for removing local git branches "
+        "which not existing in remote repository. "
+        "It corresponds to git option --prune."
+    )
+    parser.add_argument(
         '--status-file', dest='status_file',
         help="Path to a file with statuses how the remote repos fetching went. "
              "Used in executing script thru CLI."
@@ -99,6 +105,8 @@ def parse_config(config: dict) -> tuple:
             config['remote_user'] + '@' + \
             config['remote_server'] + ':'
 
+        remove_local_branches = config['remove_local_branches']
+
         # create dicts of local git repository with full paths
         # and remote urls
         repo_with_remotes = dict()
@@ -134,7 +142,7 @@ def parse_config(config: dict) -> tuple:
             "Got exception while parsing it: {err}".format(err=e)
         )
 
-    return (remote_repo_base_url, repo_with_remotes, status_file)
+    return (remote_repo_base_url, repo_with_remotes, remove_local_branches, status_file)
 
 
 def parse_cli_arguments(args: object) -> tuple:
@@ -153,6 +161,7 @@ def parse_cli_arguments(args: object) -> tuple:
     try:
         local_repo = path.abspath(args.local_repo)
         remote_repo = args.remote_repo
+        remove_local_branches = args.remove_local_branches
         status_file = args.status_file
 
         if args.action == 'fetch':
@@ -177,7 +186,7 @@ def parse_cli_arguments(args: object) -> tuple:
             "when script run without configuration file"
         )
 
-    return (local_repo, remote_repo, status_file)
+    return (local_repo, remote_repo, remove_local_branches, status_file)
 
 
 def create_git_remote(repo: object, url: str) -> bool:
@@ -224,22 +233,25 @@ def create_git_remote(repo: object, url: str) -> bool:
             return False
 
 
-def fetch_remote_repository(remote: object) -> bool:
+def fetch_remote_repository(remote: object, remove_local_branches: bool) -> bool:
     """
     Fetch repository update from external git server.
     Used force update branches by specified refs with "+".
-    Clean deleted branches. That the responsibility of parameter "prune".
+    Remove deleted branches according to flag.
+    That the responsibility of parameter "prune".
 
     Args:
         remote (object): A GitPython Remote instance.
                          Got from instance of Repo remotes objects.
+        remove_local_branches (bool): Flag in charge of removing local git branches
+                                      which not existing on remote repository.
 
     Returns:
         bool: True if update fetching successfully. Otherwise, False.
     """
 
     try:
-        remote.fetch(refspec='+refs/heads/*:refs/heads/*', prune=True)
+        remote.fetch(refspec='+refs/heads/*:refs/heads/*', prune=remove_local_branches)
         return True
     except GitException.GitCommandError as e:
         if 'Could not read from remote repository' in e.stderr:
@@ -297,9 +309,12 @@ def main():
     # assign config/CLI variables with their verification
     if arguments.config is not None:
         config = read_config(arguments.config)
-        base_remote_url, repos, status_file = parse_config(config)
+        base_remote_url, repos, remove_branches, status_file = parse_config(config)
     else:
-        local_repo, remote_repo, status_file = parse_cli_arguments(arguments)
+        (local_repo,
+         remote_repo,
+         remove_branches,
+         status_file) = parse_cli_arguments(arguments)
         repos = {local_repo: remote_repo}
 
     if arguments.action == 'metric':
@@ -317,7 +332,7 @@ def main():
             create_res = create_git_remote(repo, full_remote_url)
             if create_res:
                 remote = repo.remotes[0]
-                fetch_res = fetch_remote_repository(remote)
+                fetch_res = fetch_remote_repository(remote, remove_branches)
             else:
                 print(
                     "Failed while creatig remote for repository {repository}. "

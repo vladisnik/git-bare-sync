@@ -1,9 +1,10 @@
 ---
 
-repo_root: /home/vuser/code-projects/gitea-scripts/repo-sync/repo
+repo_root: /git-server/repo
 remote_server: github.com
 remote_user: git
 metrics: fetch_statuses.json
+remove_local_branches: yes
 repos:
   vladisnik:
     - repo-sync: vladisnik/git-bare-sync
