@@ -75,7 +75,7 @@ def read_config(config: TextIO) -> dict:
     import yaml
 
     try:
-        return yaml.load(config)
+        return yaml.load(config, Loader=yaml.Loader)
     except yaml.scanner.ScannerError as e:
         raise SystemExit(
             "Got error while parsing configuration file.\n{err}".format(err=e),
