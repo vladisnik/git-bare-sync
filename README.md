@@ -64,6 +64,12 @@ Basic usage:
 python git-bare-sync.py --local-repo $HOME/git-server/repository --remote-repo https://github.com/vladisnik/git-bare-sync.git
 ```
 
+Remove deleted local branches which no longer exists in remote repository:
+
+```bash
+python git-bare-sync.py --local-repo $HOME/git-server/repository --remote-repo https://github.com/vladisnik/git-bare-sync.git --remove-branches
+```
+
 With configuration file:
 
 > For more information about configuration see [section](#configuration) with this title.
@@ -91,6 +97,8 @@ Configuration file has following structure:
 and where from will fetching updates.
 - `remote_user` — User which will used for connect to git server through ssh.
 - `metrics` — File where will write statuses about fetching.
+- `remove_local_branches` - Flag in charge of removing local git branches which no longer exists in remote repository.
+  It corresponds to git option `--prune`.
 - `repos`
   - `subdirectory` — Directory which stored set of git repositories as list.
     - `git_repo` — Name of local git repository with value name of remote repository.
